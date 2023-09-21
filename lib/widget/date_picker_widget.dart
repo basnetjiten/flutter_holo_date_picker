@@ -57,10 +57,12 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
   late Map<String, List<int>?> _valueRangeMap;
 
   bool _isChangeDateRange = false;
+
   // whene change year the returned month is incorrect with the shown one
   // So _lock make sure that month doesn't change from cupertino widget
   // we will handle it manually
   bool _lock = false;
+
   _DatePickerWidgetState(
       DateTime? minDateTime, DateTime? maxDateTime, DateTime? initialDateTime) {
     // handle current selected year、month、day
@@ -158,6 +160,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
       List<int> valueRange = _findPickerItemRange(format)!;
 
       Widget pickerColumn = _renderDatePickerColumnComponent(
+          isMonth: format.contains('M'),
           scrollCtrl: _findScrollCtrl(format),
           valueRange: valueRange,
           format: format,
@@ -188,6 +191,7 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
       {required FixedExtentScrollController? scrollCtrl,
       required List<int> valueRange,
       required String format,
+      bool isMonth = false,
       required ValueChanged<int> valueChanged,
       double? fontSize}) {
     return Expanded(
@@ -214,10 +218,8 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
                   valueRange.last - valueRange.first + 1,
                   (index) {
                     return _renderDatePickerItemComponent(
-                      valueRange.first + index,
-                      format,
-                      fontSize,
-                    );
+                        valueRange.first + index, format, fontSize,
+                        isMonth: isMonth);
                   },
                 ),
               ),
@@ -274,14 +276,18 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
   }
 
   Widget _renderDatePickerItemComponent(
-      int value, String format, double? fontSize) {
+      int value, String format, double? fontSize,
+      {bool isMonth = false}) {
     var weekday = DateTime(_currYear!, _currMonth!, value).weekday;
 
     return Container(
       height: widget.pickerTheme!.itemHeight,
       alignment: Alignment.center,
       child: AutoSizeText(
-        DateTimeFormatter.formatDateTime(value, format, widget.locale, weekday),
+        isMonth
+            ? monthsInYear[value].toString()
+            : DateTimeFormatter.formatDateTime(
+                value, format, widget.locale, weekday),
         maxLines: 1,
         // style: TextStyle(
         //     color: widget.pickerTheme!.itemTextStyle.color,
@@ -460,4 +466,19 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
     }
     return [minDay, maxDay];
   }
+
+  Map<int, String> monthsInYear = {
+    1: "Jan",
+    2: "Feb",
+    3: "Mar",
+    4: "Apr",
+    5: "May",
+    6: "Jun",
+    7: "Jul",
+    8: "Aug",
+    9: "Sep",
+    10: "Oct",
+    11: "Nov",
+    12: "Dec"
+  };
 }
